@@ -1,16 +1,21 @@
 {
-    "author": "Refael Ackerkmann <refael@empeeric.com>",
-    "description": "Deep stack traces based on AsyncListener API",
-    "engines": {
-        "node": "^0.11.12"
-    },
-    "keywords": [ "trace", "deep-stack-trace", "AsyncListener", "performant" ],
-    "license": "MIT",
-    "main": "trace.js",
-    "name": "asynctrace",
-    "repos": "Empeeric/asynctrace",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "version": "1.0.0"
+  "author": "Refael Ackerkmann <refael@empeeric.com>",
+  "description": "Deep stack traces based on AsyncListener API",
+  "engines": {
+    "node": "^0.11.12"
+  },
+  "keywords": [
+    "trace",
+    "deep-stack-trace",
+    "AsyncListener",
+    "performant"
+  ],
+  "license": "MIT",
+  "main": "trace.js",
+  "name": "asynctrace",
+  "repos": "Empeeric/asynctrace",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.1"
 }
