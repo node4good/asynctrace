@@ -49,7 +49,7 @@ function reducer(seed, callSite) {
         return seed;
     }
     var name = callSite && callSite.getFileName();
-    if (name) seed.push(callSite);
+    if (name && !~name.indexOf('node_modules') && ~name.indexOf(sep)) seed.push(callSite);
     return seed;
 }
 
