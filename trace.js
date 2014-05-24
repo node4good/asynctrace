@@ -12,10 +12,10 @@ tracing.addAsyncListener({
 });
 
 
-function asyncFunctionInitialized() {
+function asyncFunctionInitialized(oldFrames) {
     var frames = StackError.getStackFrames(asyncFunctionInitialized);
     frames.push(BOUNDRY);
-    frames.push.apply(frames, Error._frames);
+    frames.push.apply(frames, oldFrames || Error._frames);
     Error._frames = frames;
     return frames;
 }
@@ -31,9 +31,11 @@ function asyncCallbackAfter(context, frames) {
 
 
 function asyncCallbackError(oldFrames, error) {
+    if (error._passed) return;
     var frames = (oldFrames || []).reduce(reducer, []);
     frames.unshift(BOUNDRY);
     error.stack += v8StackFormating('', frames);
+    error._passed = true;
 }
 
 
@@ -47,7 +49,7 @@ function reducer(seed, callSite) {
         return seed;
     }
     var name = callSite && callSite.getFileName();
-    if (name && !~name.indexOf('node_modules') && ~name.indexOf(sep)) seed.push(callSite);
+    if (name) seed.push(callSite);
     return seed;
 }
 
