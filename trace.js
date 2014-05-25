@@ -4,7 +4,7 @@ var util = require('util');
 
 var BOUNDRY = '     - - - - - - async boundary  - - - - - -';
 
-tracing.addAsyncListener({
+var listener = tracing.addAsyncListener({
   'create': asyncFunctionInitialized,
   'before': asyncCallbackBefore,
   'error': asyncCallbackError,
@@ -93,3 +93,19 @@ function v8StackFormating(error, frames) {
   }
   return lines.join("\n");
 }
+
+function setupForMocha() {
+    try {
+        require('shimmer').wrap(require('mocha').prototype, 'run', function (original) {
+            return function () {
+                var runner = original.apply(this, arguments);
+                runner.on('test', function (e) {
+                    Error._frames = null;
+                });
+            };
+        });
+    } catch (e) {
+        console.log(e);
+    }
+}
+setupForMocha();
