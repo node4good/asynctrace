@@ -14,12 +14,16 @@
   "license": "MIT",
   "main": "trace.js",
   "name": "asynctrace",
-  "repos": "Empeeric/asynctrace",
+  "repository": "Empeeric/asynctrace",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "version": "1.0.4",
   "dependencies": {
     "shimmer": ""
+  },
+  "devDependencies": {
+    "istanbul": "latest",
+    "mocha": "latest"
   }
 }
