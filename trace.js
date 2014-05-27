@@ -1,6 +1,14 @@
 'use strict';
+var verParts = process.version.split(/\.|-/g);
+if (verParts[1] < 11 || verParts[2] < 12) {
+    console.error("asynctrace needs node at least of version 0.11.12 to work");
+    console.error("So it'll do nothing here :(");
+    return;
+}
 var tracing = require('tracing');
 var util = require('util');
+var prefix = process.cwd().toLowerCase();
+var sep = require('path').sep;
 
 var BOUNDRY = '     - - - - - - async boundary  - - - - - -';
 
@@ -41,15 +49,23 @@ function asyncCallbackError(oldFrames, error) {
 
 /* ===================== stack chain manipulation ======================== */
 
-var sep = require('path').sep;
+
+function isInteresting(callSite) {
+    var name = callSite && callSite.getFileName();
+    if (!name) return false;
+    name = name.toLowerCase();
+    if (!~name.indexOf(sep)) return false;
+    if (name.indexOf(prefix) != 0) return false;
+    if (~name.replace(prefix, '').indexOf('node_modules')) return false;
+    return true;
+}
 
 function reducer(seed, callSite) {
     if (typeof callSite == 'string') {
         if (callSite != seed[seed.length -1]) seed.push(callSite);
         return seed;
     }
-    var name = callSite && callSite.getFileName();
-    if (name && !~name.indexOf('node_modules') && ~name.indexOf(sep)) seed.push(callSite);
+    if (isInteresting(callSite)) seed.push(callSite);
     return seed;
 }
 
