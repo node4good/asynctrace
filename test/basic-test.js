@@ -7,6 +7,7 @@ describe('simple', function () {
         var i = 1;
         var d = domain.createDomain();
         d.once('error', function (e) {
+            console.log(e.stack)
             expect(e.message).to.be.equal('gaga');
             expect(e.stack).to.contain('Immediate.a');
             expect(e.stack).to.contain('Immediate.b');
