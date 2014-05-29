@@ -64,32 +64,25 @@ Error: gaga
 
 
 ## Performance
-There is a performance price with user AsyncListner, but we were able to minimize it. For example here are timing on running the full visionmedia/express test suite:
+There is a performance price with using AsyncListner, but we were able to minimize it. For example here are timing on running the full visionmedia/express test suite:
 ```
 [10:50:28 /empeeric/3party/express] time  mocha --require asynctrace --require test/support/env --reporter dot --check-leaks test/ test/acceptance/
 
-  ...............................................................................................................
-  ................................................................................................................
-  ................................................................................................................
-  ................................................................................................................
   ..................................................................
 
   513 passing (7s)
 
-
 real    0m8.061s
 user    0m0.045s
 sys     0m0.075s
+
+
+
 [10:50:41 /empeeric/3party/express] time  mocha --require test/support/env --reporter dot --check-leaks test/ test/acceptance/
 
-  ...............................................................................................................
-  ................................................................................................................
-  ................................................................................................................
-  ................................................................................................................
   ..................................................................
 
   513 passing (5s)
-
 
 real    0m6.314s
 user    0m0.030s
