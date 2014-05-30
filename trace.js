@@ -10,13 +10,13 @@ var util = require('util');
 var prefix = process.cwd().toLowerCase();
 var sep = require('path').sep;
 
-var BOUNDRY = '     - - - - - - async boundary  - - - - - -';
+var BOUNDRY = '    \x1B[32m[sync boundery]\x1B[0m';
 
 var listener = tracing.addAsyncListener({
-  'create': asyncFunctionInitialized,
-  'before': asyncCallbackBefore,
-  'error': asyncCallbackError,
-  'after': asyncCallbackAfter
+    'create': asyncFunctionInitialized,
+    'before': asyncCallbackBefore,
+    'error': asyncCallbackError,
+    'after': asyncCallbackAfter
 });
 
 
@@ -41,10 +41,11 @@ function asyncCallbackAfter(context, frames) {
 function asyncCallbackError(oldFrames, error) {
     if (error._passed) return;
     var frames = (oldFrames || []).reduce(reducer, []);
-    frames.unshift(BOUNDRY);
+    if (frames[0]) frames[0]._crosses = true;
     error.stack += v8StackFormating('', frames);
     error._passed = true;
 }
+
 
 
 /* ===================== stack chain manipulation ======================== */
@@ -54,18 +55,20 @@ function isInteresting(callSite) {
     var name = callSite && callSite.getFileName();
     if (!name) return false;
     name = name.toLowerCase();
+    if (name === 'tracing.js') return false
     if (!~name.indexOf(sep)) return false;
     if (name.indexOf(prefix) != 0) return false;
     if (~name.replace(prefix, '').indexOf('node_modules')) return false;
     return true;
 }
 
-function reducer(seed, callSite) {
-    if (typeof callSite == 'string') {
-        if (callSite != seed[seed.length -1]) seed.push(callSite);
+function reducer(seed, frame) {
+    if (typeof frame == 'string') {
+        if (frame != seed[seed.length - 1]) seed.push(frame);
         return seed;
     }
-    if (isInteresting(callSite)) seed.push(callSite);
+    if (isInteresting(frame)) frame._interesting = true;
+    seed.push(frame);
     return seed;
 }
 
@@ -86,28 +89,31 @@ util.inherits(StackError, Error);
 
 
 function v8StackFormating(error, frames) {
-  var lines = [];
-  lines.push(error.toString());
-  for (var i = 0; i < frames.length; i++) {
-    var frame = frames[i];
-    if (typeof frame == 'string') {
-      lines.push(frame);
-      continue;
+    var lines = [];
+    lines.push(error.toString());
+    frames.push({toString: function () { return '<the nexus>\n'; }});
+    for (var i = 0; i < frames.length; i++) {
+        var frame = frames[i];
+        if (typeof frame == 'string') {
+            lines.push(frame);
+            continue;
+        }
+        var line;
+        try {
+            line = frame.toString();
+        } catch (e) {
+            try {
+                line = "<error: " + e + ">";
+            } catch (ee) {
+                // Any code that reaches this point is seriously nasty!
+                line = "<error>";
+            }
+        }
+        var prefix = frame._interesting ? "\x1B[1;4m    at " : "\x1B[92;22m    at ";
+        var suffix = "\x1B[0m";
+        lines.push(prefix + line + suffix);
     }
-    var line;
-    try {
-      line = frame.toString();
-    } catch (e) {
-      try {
-        line = "<error: " + e + ">";
-      } catch (ee) {
-        // Any code that reaches this point is seriously nasty!
-        line = "<error>";
-      }
-    }
-    lines.push("    at " + line);
-  }
-  return lines.join("\n");
+    return lines.join("\n");
 }
 
 function setupForMocha() {
