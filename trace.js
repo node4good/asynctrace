@@ -10,7 +10,14 @@ var util = require('util');
 var prefix = process.cwd().toLowerCase();
 var sep = require('path').sep;
 
-var BOUNDRY = '    \x1B[32m[sync boundery]\x1B[0m';
+var settings = {
+    tracingModuleStyle: null,//"\x1B[32m",
+    coreStyle: "\x1B[32m",
+    modulesStyle: "\x1B[0m",
+    ownStyle: "\x1B[1;4m",
+    mocha: true,
+    BOUNDRY: '    \x1B[35m[sync boundery]\x1B[0m'
+}
 
 var listener = tracing.addAsyncListener({
     'create': asyncFunctionInitialized,
@@ -22,7 +29,7 @@ var listener = tracing.addAsyncListener({
 
 function asyncFunctionInitialized(oldFrames) {
     var frames = StackError.getStackFrames(asyncFunctionInitialized);
-    frames.push(BOUNDRY);
+    frames.unshift(settings.BOUNDRY);
     frames.push.apply(frames, oldFrames || Error._frames);
     Error._frames = frames;
     return frames;
@@ -41,37 +48,13 @@ function asyncCallbackAfter(context, frames) {
 function asyncCallbackError(oldFrames, error) {
     if (error._passed) return;
     var frames = (oldFrames || []).reduce(reducer, []);
-    if (frames[0]) frames[0]._crosses = true;
     error.stack += v8StackFormating('', frames);
     error._passed = true;
 }
 
 
 
-/* ===================== stack chain manipulation ======================== */
-
-
-function isInteresting(callSite) {
-    var name = callSite && callSite.getFileName();
-    if (!name) return false;
-    name = name.toLowerCase();
-    if (name === 'tracing.js') return false
-    if (!~name.indexOf(sep)) return false;
-    if (name.indexOf(prefix) != 0) return false;
-    if (~name.replace(prefix, '').indexOf('node_modules')) return false;
-    return true;
-}
-
-function reducer(seed, frame) {
-    if (typeof frame == 'string') {
-        if (frame != seed[seed.length - 1]) seed.push(frame);
-        return seed;
-    }
-    if (isInteresting(frame)) frame._interesting = true;
-    seed.push(frame);
-    return seed;
-}
-
+/* ===================== stack chain util ======================== */
 
 function StackError(otp) {
     Error.captureStackTrace(this, otp);
@@ -88,10 +71,33 @@ StackError.getStackFrames = function getStackFrames(otp) {
 util.inherits(StackError, Error);
 
 
+/* ===================== stack chain manipulation & formating ======================== */
+
+function categorizeFrame(frame) {
+    var name = frame && frame.getFileName() && frame.getFileName().toLowerCase();
+    if (!name) return frame._style = settings.coreStyle;
+    if (name === 'tracing.js') return frame._style = settings.tracingModuleStyle;
+    if (!~name.indexOf(sep)) return frame._style = settings.coreStyle;
+    if (name.indexOf(prefix) != 0) return frame._style = settings.coreStyle;
+    if (~name.replace(prefix, '').indexOf('node_modules')) return frame._style = settings.modulesStyle;
+    frame._style = settings.ownStyle;
+}
+
+function reducer(seed, frame) {
+    if (typeof frame == 'string') {
+        if (frame != seed[seed.length - 1]) seed.push(frame);
+        return seed;
+    }
+    categorizeFrame(frame);
+    seed.push(frame);
+    return seed;
+}
+
+
 function v8StackFormating(error, frames) {
     var lines = [];
     lines.push(error.toString());
-    frames.push({toString: function () { return '<the nexus>\n'; }});
+    frames.push({toString: function () { return '<the nexus>\n'; _style: settings.ownStyle }});
     for (var i = 0; i < frames.length; i++) {
         var frame = frames[i];
         if (typeof frame == 'string') {
@@ -109,12 +115,15 @@ function v8StackFormating(error, frames) {
                 line = "<error>";
             }
         }
-        var prefix = frame._interesting ? "\x1B[1;4m    at " : "\x1B[92;22m    at ";
+        var prefix = frame._style + "    at ";
         var suffix = "\x1B[0m";
-        lines.push(prefix + line + suffix);
+        if (frame._style) lines.push(prefix + line + suffix);
     }
     return lines.join("\n");
 }
+
+
+/* ===================== 3rd party integrations ======================== */
 
 function setupForMocha() {
     try {
@@ -130,4 +139,4 @@ function setupForMocha() {
         console.log(e);
     }
 }
-setupForMocha();
+if (settings.forMocha) setupForMocha();
