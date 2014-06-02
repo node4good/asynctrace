@@ -13,8 +13,8 @@ var sep = require('path').sep;
 var settings = {
     tracingModuleStyle: null,//"\x1B[32m",
     coreStyle: "\x1B[32m",
-    modulesStyle: "\x1B[0m",
-    ownStyle: "\x1B[1;4m",
+    modulesStyle: "\x1B[33m",
+    ownStyle: "\x1B[1m",
     mocha: true,
     BOUNDRY: '    \x1B[35m[sync boundery]\x1B[0m'
 }
@@ -139,4 +139,4 @@ function setupForMocha() {
         console.log(e);
     }
 }
-if (settings.forMocha) setupForMocha();
+if (settings.mocha) setupForMocha();
