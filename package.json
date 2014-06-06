@@ -1,30 +1,37 @@
 {
-  "author": "Refael Ackerkmann <refael@empeeric.com>",
-  "description": "Deep stack traces based on AsyncListener API",
-  "engines": {
-    "node": "^0.11.12"
-  },
-  "keywords": [
-    "trace",
-    "deep-stack-trace",
-    "AsyncListener",
-    "performant",
-    "mocha-compatible"
-  ],
-  "license": "MIT",
-  "main": "trace.js",
-  "name": "asynctrace",
-  "repository": "Empeeric/asynctrace",
-  "scripts": {
-    "test": "mocha --require ."
-  },
-  "version": "1.0.8",
-  "dependencies": {
-    "shimmer": ""
-  },
-  "devDependencies": {
-    "chai": "latest",
-    "istanbul": "latest",
-    "mocha": "latest"
-  }
+   "author" : "Refael Ackerkmann <refael@empeeric.com>",
+   "dependencies" : {
+      "async-listener" : "latest",
+      "shimmer" : "latest"
+   },
+   "description" : "Deep stack traces based on AsyncListener API",
+   "devDependencies" : {
+      "chai" : "latest",
+      "istanbul" : "latest",
+      "mocha" : "latest"
+   },
+   "engines" : {
+      "node" : "^0.11.12"
+   },
+   "jshintConfig" : {
+    "strict": true,
+    "trailing": true,
+    "unused": true,
+    "node":true
+},
+   "keywords" : [
+      "trace",
+      "deep-stack-trace",
+      "AsyncListener",
+      "performant",
+      "mocha-compatible"
+   ],
+   "license" : "MIT",
+   "main" : "index.js",
+   "name" : "asynctrace",
+   "repository" : "Empeeric/asynctrace",
+   "scripts" : {
+      "test" : "mocha --require ."
+   },
+   "version" : "1.0.8"
 }

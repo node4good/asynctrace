@@ -11,15 +11,16 @@ var prefix = process.cwd().toLowerCase();
 var sep = require('path').sep;
 
 var settings = {
+    // `null`ing a style will remove it from the trace output
     tracingModuleStyle: null,//"\x1B[32m",
     coreStyle: "\x1B[32m",
     modulesStyle: "\x1B[33m",
     ownStyle: "\x1B[1m",
     mocha: true,
-    BOUNDRY: '    \x1B[35m[sync boundery]\x1B[0m'
-}
+    BOUNDARY: '    \x1B[35m[sync boundary]\x1B[0m'
+};
 
-var listener = tracing.addAsyncListener({
+tracing.addAsyncListener({
     'create': asyncFunctionInitialized,
     'before': asyncCallbackBefore,
     'error': asyncCallbackError,
@@ -29,18 +30,18 @@ var listener = tracing.addAsyncListener({
 
 function asyncFunctionInitialized(oldFrames) {
     var frames = StackError.getStackFrames(asyncFunctionInitialized);
-    frames.unshift(settings.BOUNDRY);
+    frames.unshift(settings.BOUNDARY);
     frames.push.apply(frames, oldFrames || Error._frames);
     Error._frames = frames;
     return frames;
 }
 
-function asyncCallbackBefore(context, frames) {
+function asyncCallbackBefore(_, frames) {
     Error._frames = frames;
 }
 
 
-function asyncCallbackAfter(context, frames) {
+function asyncCallbackAfter(_, frames) {
     Error._frames = frames;
 }
 
@@ -75,11 +76,11 @@ util.inherits(StackError, Error);
 
 function categorizeFrame(frame) {
     var name = frame && frame.getFileName() && frame.getFileName().toLowerCase();
-    if (!name) return frame._style = settings.coreStyle;
-    if (name === 'tracing.js') return frame._style = settings.tracingModuleStyle;
-    if (!~name.indexOf(sep)) return frame._style = settings.coreStyle;
-    if (name.indexOf(prefix) != 0) return frame._style = settings.coreStyle;
-    if (~name.replace(prefix, '').indexOf('node_modules')) return frame._style = settings.modulesStyle;
+    if (!name) return (frame._style = settings.coreStyle);
+    if (name === 'tracing.js') return (frame._style = settings.tracingModuleStyle);
+    if (!~name.indexOf(sep)) return (frame._style = settings.coreStyle);
+    if (name.indexOf(prefix) !==0) return (frame._style = settings.coreStyle);
+    if (~name.replace(prefix, '').indexOf('node_modules')) return (frame._style = settings.modulesStyle);
     frame._style = settings.ownStyle;
 }
 
@@ -97,7 +98,7 @@ function reducer(seed, frame) {
 function v8StackFormating(error, frames) {
     var lines = [];
     lines.push(error.toString());
-    frames.push({toString: function () { return '<the nexus>\n'; _style: settings.ownStyle }});
+    frames.push({ toString: function () { return '<the nexus>\n';}, _style: settings.coreStyle });
     for (var i = 0; i < frames.length; i++) {
         var frame = frames[i];
         if (typeof frame == 'string') {
@@ -130,7 +131,7 @@ function setupForMocha() {
         require('shimmer').wrap(require('mocha').prototype, 'run', function (original) {
             return function () {
                 var runner = original.apply(this, arguments);
-                runner.on('test', function (e) {
+                runner.on('test', function () {
                     Error._frames = null;
                 });
             };
