@@ -1,11 +1,11 @@
 'use strict';
-var verParts = process.version.split(/\.|-/g);
-if (verParts[1] < 11 || verParts[2] < 12) {
-    console.error("asynctrace needs node at least of version 0.11.12 to work");
-    console.error("So it'll do nothing here :(");
-    return;
+try {
+    var tracing = require('tracing');
+} catch (e) {
+    if (e.code !== 'MODULE_NOT_FOUND') throw e;
+    require('async-listener');
+    tracing = process;
 }
-var tracing = require('tracing');
 var util = require('util');
 var prefix = process.cwd().toLowerCase();
 var sep = require('path').sep;

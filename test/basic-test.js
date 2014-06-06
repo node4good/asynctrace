@@ -4,17 +4,17 @@ var expect = require('chai').expect;
 
 describe('setImmediate', function () {
     it('show what happens to a local Exception', function (done) {
-        var i = 1;
+        var i = 0;
         var d = domain.createDomain();
         d.once('error', function (e) {
-            console.log(e.stack)
+            console.log(e.stack);
             expect(e.message).to.be.equal('gaga');
-            expect(e.stack).to.contain('Immediate.a');
-            expect(e.stack).to.contain('Immediate.b');
-            expect(e.stack).to.contain('Immediate.c');
-            expect(e.stack).to.contain('Immediate.d');
-            expect(e.stack).to.contain('Immediate.e');
-            if (--i == 0) done();
+            expect(e.stack).to.contain('.a ');
+            expect(e.stack).to.contain('.b ');
+            expect(e.stack).to.contain('.c ');
+            expect(e.stack).to.contain('.d ');
+            expect(e.stack).to.contain('.e ');
+            if (--i === 0) done();
         });
         d.run(function () {
             setImmediate(function a() {
@@ -22,6 +22,7 @@ describe('setImmediate', function () {
                     setImmediate(function c() {
                         setImmediate(function d() {
                             setImmediate(function e() {
+                                ++i;
                                 throw new Error('gaga');
                             });
                         });
@@ -33,26 +34,26 @@ describe('setImmediate', function () {
 
 
     it('show what happens to a exception in itertwining contexts', function (done) {
-        var i = 2;
+        var i = 0;
         var d = domain.createDomain();
         d.once('error', function (e) {
-          console.log(e.stack)
-          expect(e.message).to.be.equal('gaga');
-            expect(e.stack).to.contain('Immediate.a2');
-            expect(e.stack).to.contain('Immediate.b2');
-            expect(e.stack).to.contain('Immediate.c2');
-            expect(e.stack).to.contain('Immediate.d2');
-            expect(e.stack).to.contain('Immediate.e2');
-            --i
+          console.log(e.stack);
+          expect(e.message).to.be.equal('gaga1');
+            expect(e.stack).to.contain('.a2 ');
+            expect(e.stack).to.contain('.b2 ');
+            expect(e.stack).to.contain('.c2 ');
+            expect(e.stack).to.contain('.d2 ');
+            expect(e.stack).to.contain('.e2 ');
+            --i;
             d.once('error', function (e) {
-              console.log(e.stack)
-              expect(e.message).to.be.equal('gaga1');
-                expect(e.stack).to.contain('Immediate.a2');
-                expect(e.stack).to.contain('Immediate.b2');
-                expect(e.stack).to.contain('Immediate.c2');
-                expect(e.stack).to.contain('Immediate.d21');
-                expect(e.stack).to.contain('Immediate.e21');
-                if (--i == 0) done();
+              console.log(e.stack);
+              expect(e.message).to.be.equal('gaga2');
+                expect(e.stack).to.contain('.a2 ');
+                expect(e.stack).to.contain('.b2 ');
+                expect(e.stack).to.contain('.c2 ');
+                expect(e.stack).to.contain('.d21 ');
+                expect(e.stack).to.contain('.e21 ');
+                if (--i === 0) done();
             });
         });
         d.run(function () {
@@ -61,12 +62,14 @@ describe('setImmediate', function () {
                     setImmediate(function c2() {
                         setImmediate(function d2() {
                             setImmediate(function e2() {
-                                throw new Error('gaga');
+                                ++i;
+                                throw new Error('gaga1');
                             });
                         });
                         setImmediate(function d21() {
                             setImmediate(function e21() {
-                                throw new Error('gaga1');
+                                ++i;
+                                throw new Error('gaga2');
                             });
                         });
                     });
@@ -80,17 +83,17 @@ describe('setImmediate', function () {
 
 describe('nextTick', function () {
     it('show what happens to a local Exception', function (done) {
-        var i = 1;
+        var i = 0;
         var d = domain.createDomain();
         d.once('error', function (e) {
-            console.log(e.stack)
-            expect(e.message).to.be.equal('gaga');
+            console.log(e.stack);
+            expect(e.message).to.be.equal('gaga4');
             expect(e.stack).to.contain(' a ');
             expect(e.stack).to.contain(' b ');
             expect(e.stack).to.contain(' c ');
             expect(e.stack).to.contain(' d ');
             expect(e.stack).to.contain(' e ');
-            if (--i == 0) done();
+            if (--i === 0) done();
         });
         d.run(function () {
             process.nextTick(function a() {
@@ -98,7 +101,8 @@ describe('nextTick', function () {
                     process.nextTick(function c() {
                         process.nextTick(function d() {
                             process.nextTick(function e() {
-                                throw new Error('gaga');
+                                ++i;
+                                throw new Error('gaga4');
                             });
                         });
                     });
@@ -109,26 +113,26 @@ describe('nextTick', function () {
 
 
     it('show what happens to a exception in itertwining contexts', function (done) {
-        var i = 2;
+        var i = 0;
         var d = domain.createDomain();
         d.once('error', function (e) {
-          console.log(e.stack)
-          expect(e.message).to.be.equal('gaga');
+          console.log(e.stack);
+          expect(e.message).to.be.equal('gaga5');
             expect(e.stack).to.contain(' a2 ');
             expect(e.stack).to.contain(' b2 ');
             expect(e.stack).to.contain(' c2 ');
             expect(e.stack).to.contain(' d2 ');
             expect(e.stack).to.contain(' e2 ');
-            --i
+            --i;
             d.once('error', function (e) {
-              console.log(e.stack)
-              expect(e.message).to.be.equal('gaga1');
+              console.log(e.stack);
+              expect(e.message).to.be.equal('gaga6');
                 expect(e.stack).to.contain(' a2 ');
                 expect(e.stack).to.contain(' b2 ');
                 expect(e.stack).to.contain(' c2 ');
                 expect(e.stack).to.contain(' d21 ');
                 expect(e.stack).to.contain(' e21 ');
-                if (--i == 0) done();
+                if (--i === 0) done();
             });
         });
         d.run(function () {
@@ -137,12 +141,14 @@ describe('nextTick', function () {
                     process.nextTick(function c2() {
                         process.nextTick(function d2() {
                             process.nextTick(function e2() {
-                                throw new Error('gaga');
+                                ++i;
+                                throw new Error('gaga5');
                             });
                         });
                         process.nextTick(function d21() {
                             process.nextTick(function e21() {
-                                throw new Error('gaga1');
+                                ++i;
+                                throw new Error('gaga6');
                             });
                         });
                     });
@@ -156,17 +162,17 @@ describe('nextTick', function () {
 describe('fs.readFile', function () {
     var fs = require('fs');
     it('show what happens to a local Exception', function (done) {
-        var i = 1;
+        var i = 0;
         var d = domain.createDomain();
         d.once('error', function (e) {
-            console.log(e.stack)
-            expect(e.message).to.be.equal('gaga');
+            console.log(e.stack);
+            expect(e.message).to.be.equal('gaga7');
             expect(e.stack).to.contain(' a ');
             expect(e.stack).to.contain(' b ');
             expect(e.stack).to.contain(' c ');
             expect(e.stack).to.contain(' d ');
             expect(e.stack).to.contain(' e ');
-            if (--i == 0) done();
+            if (--i === 0) done();
         });
         d.run(function () {
             fs.readFile('package.json', function a() {
@@ -174,7 +180,8 @@ describe('fs.readFile', function () {
                     fs.readFile('package.json', function c() {
                         fs.readFile('package.json', function d() {
                             fs.readFile('package.json', function e() {
-                                throw new Error('gaga');
+                                ++i;
+                                throw new Error('gaga7');
                             });
                         });
                     });
@@ -185,26 +192,26 @@ describe('fs.readFile', function () {
 
 
     it('show what happens to a exception in itertwining contexts', function (done) {
-        var i = 2;
+        var i = 0;
         var d = domain.createDomain();
         d.once('error', function (e) {
-          console.log(e.stack)
-          expect(e.message).to.be.equal('gaga');
+          console.log(e.stack);
+          expect(e.message).to.be.equal('gaga8');
             expect(e.stack).to.contain(' a2 ');
             expect(e.stack).to.contain(' b2 ');
             expect(e.stack).to.contain(' c2 ');
             expect(e.stack).to.contain(' d2 ');
             expect(e.stack).to.contain(' e2 ');
-            --i
+            --i;
             d.once('error', function (e) {
-              console.log(e.stack)
-              expect(e.message).to.be.equal('gaga1');
+              console.log(e.stack);
+              expect(e.message).to.be.equal('gaga9');
                 expect(e.stack).to.contain(' a2 ');
                 expect(e.stack).to.contain(' b2 ');
                 expect(e.stack).to.contain(' c2 ');
                 expect(e.stack).to.contain(' d21 ');
                 expect(e.stack).to.contain(' e21 ');
-                if (--i == 0) done();
+                if (--i === 0) done();
             });
         });
         d.run(function () {
@@ -213,12 +220,14 @@ describe('fs.readFile', function () {
                     fs.readFile('package.json', function c2() {
                         fs.readFile('package.json', function d2() {
                             fs.readFile('package.json', function e2() {
-                                throw new Error('gaga');
+                                ++i;
+                                throw new Error('gaga8');
                             });
                         });
                         fs.readFile('package.json', function d21() {
                             fs.readFile('package.json', function e21() {
-                                throw new Error('gaga1');
+                                ++i;
+                                throw new Error('gaga9');
                             });
                         });
                     });
