@@ -7,17 +7,20 @@ try {
     tracing = process;
 }
 var util = require('util');
-var prefix = process.cwd().toLowerCase();
+var PATH_PREFIX = process.cwd().toLowerCase();
 var sep = require('path').sep;
 
 var settings = {
     // `null`ing a style will remove it from the trace output
-    tracingModuleStyle: null,//"\x1B[32m",
-    coreStyle: "\x1B[32m",
-    modulesStyle: "\x1B[33m",
+    tracingModuleStyle: null,
+//    tracingModuleStyle: "\x1B[31m",
+    modulesStyle: "\x1B[32m",
+    globalsStyle: "\x1B[33m",
+    coreStyle: "\x1B[34m",
     ownStyle: "\x1B[1m",
     mocha: true,
-    BOUNDARY: '    \x1B[35m[sync boundary]\x1B[0m'
+    BOUNDARY: '    [sync boundary]',
+    useColors: true
 };
 
 tracing.addAsyncListener({
@@ -76,12 +79,12 @@ util.inherits(StackError, Error);
 
 function categorizeFrame(frame) {
     var name = frame && frame.getFileName() && frame.getFileName().toLowerCase();
-    if (!name) return (frame._style = settings.coreStyle);
-    if (name === 'tracing.js') return (frame._style = settings.tracingModuleStyle);
-    if (!~name.indexOf(sep)) return (frame._style = settings.coreStyle);
-    if (name.indexOf(prefix) !==0) return (frame._style = settings.coreStyle);
-    if (~name.replace(prefix, '').indexOf('node_modules')) return (frame._style = settings.modulesStyle);
-    frame._style = settings.ownStyle;
+    if (!name) return (frame._section = 'core');
+    if (name === 'tracing.js') return (frame._section = 'tracingModule');
+    if (!~name.indexOf(sep)) return (frame._section = 'core');
+    if (name.indexOf(PATH_PREFIX) !== 0) return (frame._section = 'globals');
+    if (~(name.replace(PATH_PREFIX, '')).indexOf('node_modules')) return (frame._section = 'modules');
+    frame._section = 'own';
 }
 
 function reducer(seed, frame) {
@@ -98,7 +101,7 @@ function reducer(seed, frame) {
 function v8StackFormating(error, frames) {
     var lines = [];
     lines.push(error.toString());
-    frames.push({ toString: function () { return '<the nexus>\n';}, _style: settings.coreStyle });
+    frames.push({ toString: function () { return '<the nexus>\n';}, _section: 'core' });
     for (var i = 0; i < frames.length; i++) {
         var frame = frames[i];
         if (typeof frame == 'string') {
@@ -116,19 +119,28 @@ function v8StackFormating(error, frames) {
                 line = "<error>";
             }
         }
-        var prefix = frame._style + "    at ";
-        var suffix = "\x1B[0m";
-        if (frame._style) lines.push(prefix + line + suffix);
+        var style = getStyle(frame._section);
+        var prefix = style + "    at ";
+        var suffix = settings.useColors ? "\x1B[0m" : '';
+        if (style !== null) lines.push(prefix + line + suffix);
     }
     return lines.join("\n");
 }
+
+
+function getStyle(sec) {
+    return (settings.useColors) ? settings[sec + 'Style'] : '';
+}
+
 
 
 /* ===================== 3rd party integrations ======================== */
 
 function setupForMocha() {
     try {
-        require('shimmer').wrap(require('mocha').prototype, 'run', function (original) {
+        var mocha = require('mocha');
+        var shimmer = require('shimmer');
+        shimmer.wrap(mocha.prototype, 'run', function (original) {
             return function () {
                 var runner = original.apply(this, arguments);
                 runner.on('test', function () {
@@ -136,8 +148,13 @@ function setupForMocha() {
                 });
             };
         });
+        shimmer.wrap(mocha.prototype, 'useColors', function (original) {
+            return function () {
+                settings.useColors = original.apply(this, arguments).options.useColors;
+            };
+        });
     } catch (e) {
-        console.log(e);
+        if (e.code !== 'MODULE_NOT_FOUND') console.error(e);
     }
 }
 if (settings.mocha) setupForMocha();
