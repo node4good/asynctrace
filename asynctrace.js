@@ -57,7 +57,6 @@ function asyncCallbackError(oldFrames, error) {
 }
 
 
-
 /* ===================== stack chain util ======================== */
 
 function StackError(otp) {
@@ -122,7 +121,7 @@ function v8StackFormating(error, frames) {
         var style = getStyle(frame._section);
         var prefix = style + "    at ";
         var suffix = settings.useColors ? "\x1B[0m" : '';
-        if (style !== null) lines.push(prefix + line + suffix);
+        if (typeof style == 'string') lines.push(prefix + line + suffix);
     }
     return lines.join("\n");
 }
@@ -133,24 +132,22 @@ function getStyle(sec) {
 }
 
 
-
 /* ===================== 3rd party integrations ======================== */
 
 function setupForMocha() {
     try {
-        var mocha = require('mocha');
+        var mocha = Object.keys(require.cache)
+            .filter(function (k) {return ~k.search(/mocha.index\.js/)})
+            .map(function (k) { return require.cache[k].exports; })
+            .pop();
         var shimmer = require('shimmer');
         shimmer.wrap(mocha.prototype, 'run', function (original) {
             return function () {
                 var runner = original.apply(this, arguments);
+                settings.useColors = this.options.useColors;
                 runner.on('test', function () {
                     Error._frames = null;
                 });
-            };
-        });
-        shimmer.wrap(mocha.prototype, 'useColors', function (original) {
-            return function () {
-                settings.useColors = original.apply(this, arguments).options.useColors;
             };
         });
     } catch (e) {
