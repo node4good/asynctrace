@@ -1,48 +1,50 @@
 {
-   "author" : "Refael Ackerkmann <refael@empeeric.com>",
-   "bundledDependencies" : [ "async-listener" ],
-   "dependencies" : {
-      "shimmer" : "latest"
-   },
-   "description" : "Deep stack traces based on AsyncListener API",
-   "devDependencies" : {
-      "chai" : "latest",
-      "istanbul" : "latest",
-      "mocha" : "latest"
-   },
-   "engineStrict" : {
-      "node" : ">= 0.10.0"
-   },
-   "engines" : {
-      "node" : "^0.11.12"
-   },
-   "jshintConfig" : {
-      "globals" : {
-         "after" : false,
-         "afterEach" : false,
-         "before" : false,
-         "beforeEach" : false,
-         "describe" : false,
-         "it" : false
-      },
-      "node" : true,
-      "strict" : true,
-      "trailing" : true,
-      "unused" : true
-   },
-   "keywords" : [
-      "trace",
-      "deep-stack-trace",
-      "AsyncListener",
-      "performant",
-      "mocha-compatible"
-   ],
-   "license" : "MIT",
-   "main" : "asynctrace.js",
-   "name" : "asynctrace",
-   "repository" : "Empeeric/asynctrace",
-   "scripts" : {
-      "test" : "mocha --require ."
-   },
-   "version" : "1.2.0"
+  "author": "Refael Ackerkmann <refael@empeeric.com>",
+  "bundledDependencies": [
+    "async-listener"
+  ],
+  "dependencies": {
+    "shimmer": "latest"
+  },
+  "description": "Deep stack traces based on AsyncListener API",
+  "devDependencies": {
+    "chai": "latest",
+    "istanbul": "latest",
+    "mocha": "latest"
+  },
+  "engineStrict": {
+    "node": ">= 0.10.0"
+  },
+  "engines": {
+    "node": "^0.11.12"
+  },
+  "jshintConfig": {
+    "globals": {
+      "after": false,
+      "afterEach": false,
+      "before": false,
+      "beforeEach": false,
+      "describe": false,
+      "it": false
+    },
+    "node": true,
+    "strict": true,
+    "trailing": true,
+    "unused": true
+  },
+  "keywords": [
+    "trace",
+    "deep-stack-trace",
+    "AsyncListener",
+    "performant",
+    "mocha-compatible"
+  ],
+  "license": "MIT",
+  "main": "asynctrace.js",
+  "name": "asynctrace",
+  "repository": "Empeeric/asynctrace",
+  "scripts": {
+    "test": "mocha --require ."
+  },
+  "version": "1.2.1"
 }
