@@ -20,12 +20,12 @@
   },
   "jshintConfig": {
     "globals": {
-      "after": false,
-      "afterEach": false,
-      "before": false,
-      "beforeEach": false,
-      "describe": false,
-      "it": false
+      "after": true,
+      "afterEach": true,
+      "before": true,
+      "beforeEach": true,
+      "describe": true,
+      "it": true
     },
     "node": true,
     "strict": true,

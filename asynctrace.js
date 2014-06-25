@@ -32,19 +32,21 @@ tracing.addAsyncListener({
 
 
 function asyncFunctionInitialized(oldFrames) {
+    oldFrames = oldFrames || Error._frames || [];
     var frames = StackError.getStackFrames(asyncFunctionInitialized);
+    if (frames[1] && frames[1].functionName === 'createTCP') return oldFrames;
     frames.unshift(settings.BOUNDARY);
-    frames.push.apply(frames, oldFrames || Error._frames);
+    frames.push.apply(frames, oldFrames);
     Error._frames = frames;
     return frames;
 }
 
-function asyncCallbackBefore(_, frames) {
+function asyncCallbackBefore(__, frames) {
     Error._frames = frames;
 }
 
 
-function asyncCallbackAfter(_, frames) {
+function asyncCallbackAfter(__, frames) {
     Error._frames = frames;
 }
 
@@ -62,7 +64,14 @@ function asyncCallbackError(oldFrames, error) {
 function StackError(otp) {
     Error.captureStackTrace(this, otp);
     Error.prepareStackTrace = function justStoreStackStace(error, frames) {
-        error._frames = frames;
+        error._frames = frames.map(function (frame) {
+            return {
+                string: frame.toString(),
+                fileName: frame.getFileName(),
+                functionName: frame.getFunctionName(),
+                methodName: frame.getMethodName()
+            };
+        });
         return '';
     };
     this.stack;  // jshint ignore:line
@@ -77,7 +86,7 @@ util.inherits(StackError, Error);
 /* ===================== stack chain manipulation & formating ======================== */
 
 function categorizeFrame(frame) {
-    var name = frame && frame.getFileName() && frame.getFileName().toLowerCase();
+    var name = frame && frame.fileName && frame.fileName.toLowerCase();
     if (!name) return (frame._section = 'core');
     if (name === 'tracing.js') return (frame._section = 'tracingModule');
     if (!~name.indexOf(sep)) return (frame._section = 'core');
@@ -100,7 +109,7 @@ function reducer(seed, frame) {
 function v8StackFormating(error, frames) {
     var lines = [];
     lines.push(error.toString());
-    frames.push({ toString: function () { return '<the nexus>\n';}, _section: 'core' });
+    frames.push({ string: '<the nexus>\n', _section: 'core' });
     for (var i = 0; i < frames.length; i++) {
         var frame = frames[i];
         if (typeof frame == 'string') {
@@ -109,7 +118,7 @@ function v8StackFormating(error, frames) {
         }
         var line;
         try {
-            line = frame.toString();
+            line = frame.string;
         } catch (e) {
             try {
                 line = "<error: " + e + ">";
@@ -137,7 +146,7 @@ function getStyle(sec) {
 function setupForMocha() {
     try {
         var mocha = Object.keys(require.cache)
-            .filter(function (k) {return ~k.search(/mocha.index\.js/)})
+            .filter(function (k) { return ~k.search(/mocha.index\.js/); })
             .map(function (k) { return require.cache[k].exports; })
             .pop();
         var shimmer = require('shimmer');
