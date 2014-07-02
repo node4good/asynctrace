@@ -1,4 +1,5 @@
 'use strict';
+Error.stackTraceLimit = Infinity;
 try {
     var tracing = require('tracing');
 } catch (e) {
