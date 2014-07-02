@@ -157,10 +157,11 @@ function setupForMocha() {
             .pop();
         if (!mocha) return;
         var shimmer = require('shimmer');
-        shimmer.wrap(mocha.prototype, 'run', function (original) {
+        var reporters = mocha.reporters.Base;
+        shimmer.wrap(mocha.Runner.prototype, 'run', function (original) {
             return function () {
                 var runner = original.apply(this, arguments);
-                settings.useColors = this.options.useColors;
+                settings.useColors = reporters.useColors;
                 runner.on('test', function () {
                     Error._frames = null;
                 });
