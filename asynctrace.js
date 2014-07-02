@@ -7,7 +7,12 @@ try {
     require('async-listener');
     tracing = process;
 }
-var util = require('util');
+try {
+    var util = require('util');
+    var debug = util.debuglog('asynctrace');
+} catch (e) {
+    debug = console.error.bind(console);
+}
 var PATH_PREFIX = process.cwd().toLowerCase();
 var sep = require('path').sep;
 
@@ -150,6 +155,7 @@ function setupForMocha() {
             .filter(function (k) { return ~k.search(/mocha.index\.js/); })
             .map(function (k) { return require.cache[k].exports; })
             .pop();
+        if (!mocha) return;
         var shimmer = require('shimmer');
         shimmer.wrap(mocha.prototype, 'run', function (original) {
             return function () {
@@ -161,7 +167,7 @@ function setupForMocha() {
             };
         });
     } catch (e) {
-        if (e.code !== 'MODULE_NOT_FOUND') console.error(e);
+        if (e.code !== 'MODULE_NOT_FOUND') debug(e.stack);
     }
 }
 if (settings.mocha) setupForMocha();
