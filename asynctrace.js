@@ -29,12 +29,13 @@ var settings = {
     useColors: true
 };
 
-tracing.addAsyncListener({
-    'create': asyncFunctionInitialized,
-    'before': asyncCallbackBefore,
-    'error': asyncCallbackError,
-    'after': asyncCallbackAfter
-});
+if (!process.env.NOASYNCTRACE)
+    tracing.addAsyncListener({
+        'create': asyncFunctionInitialized,
+        'before': asyncCallbackBefore,
+        'error': asyncCallbackError,
+        'after': asyncCallbackAfter
+    });
 
 
 function asyncFunctionInitialized(oldFrames) {
