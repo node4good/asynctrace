@@ -1,5 +1,4 @@
 'use strict';
-Error.stackTraceLimit = Infinity;
 try {
     var tracing = require('tracing');
 } catch (e) {
@@ -41,7 +40,9 @@ if (!process.env.NOASYNCTRACE)
 function asyncFunctionInitialized(oldFrames) {
     oldFrames = oldFrames || Error._frames || [];
     var frames = StackError.getStackFrames(asyncFunctionInitialized);
-    if (frames[1] && frames[1].functionName === 'createTCP') return oldFrames;
+    var funcName;
+    try { funcName = frames[1] && frames[1].getFunctionName(); } catch (e) {}
+    if (funcName === 'createTCP') return oldFrames;
     frames.unshift(settings.BOUNDARY);
     frames.push.apply(frames, oldFrames);
     Error._frames = frames;
@@ -60,7 +61,7 @@ function asyncCallbackAfter(__, frames) {
 
 function asyncCallbackError(oldFrames, error) {
     if (error._passed) return;
-    var frames = (oldFrames || []).reduce(reducer, []);
+    var frames = (oldFrames || []);
     error.stack += v8StackFormating('', frames);
     error._passed = true;
 }
@@ -71,14 +72,7 @@ function asyncCallbackError(oldFrames, error) {
 function StackError(otp) {
     Error.captureStackTrace(this, otp);
     Error.prepareStackTrace = function justStoreStackStace(error, frames) {
-        error._frames = frames.map(function (frame) {
-            return {
-                string: frame.toString(),
-                fileName: frame.getFileName(),
-                functionName: frame.getFunctionName(),
-                methodName: frame.getMethodName()
-            };
-        });
+        error._frames = frames;
         return '';
     };
     this.stack;  // jshint ignore:line
@@ -93,7 +87,7 @@ util.inherits(StackError, Error);
 /* ===================== stack chain manipulation & formating ======================== */
 
 function categorizeFrame(frame) {
-    var name = frame && frame.fileName && frame.fileName.toLowerCase();
+    var name = frame && frame.getFileName() && frame.getFileName().toLowerCase();
     if (!name) return (frame._section = 'core');
     if (name === 'tracing.js') return (frame._section = 'tracingModule');
     if (!~name.indexOf(sep)) return (frame._section = 'core');
@@ -114,9 +108,11 @@ function reducer(seed, frame) {
 
 
 function v8StackFormating(error, frames) {
+    frames = frames.reduce(reducer, []);
+
     var lines = [];
     lines.push(error.toString());
-    frames.push({ string: '<the nexus>\n', _section: 'core' });
+    frames.push({ toString: function () { return '<the nexus>\n'; }, _section: 'core' });
     for (var i = 0; i < frames.length; i++) {
         var frame = frames[i];
         if (typeof frame == 'string') {
@@ -125,7 +121,7 @@ function v8StackFormating(error, frames) {
         }
         var line;
         try {
-            line = frame.string;
+            line = frame.toString();
         } catch (e) {
             try {
                 line = "<error: " + e + ">";
@@ -169,7 +165,7 @@ function setupForMocha() {
             };
         });
     } catch (e) {
-        if (e.code !== 'MODULE_NOT_FOUND') debug(e.stack);
+        debug(e.stack);
     }
 }
 if (settings.mocha) setupForMocha();
