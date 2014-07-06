@@ -6,6 +6,9 @@ Deep stack traces based on AsyncListener API
 [![Build Status](https://travis-ci.org/TheNodeILs/asynctrace.png?branch=master "Build Status")](https://travis-ci.org/TheNodeILs/asynctrace)
 
 
+[![NPM](https://nodei.co/npm-dl/asynctrace.png)](https://nodei.co/npm/asynctrace/)
+
+
 ## Install
 You know the drill
 ```
