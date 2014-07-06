@@ -3,7 +3,7 @@ asynctrace
 
 Deep stack traces based on AsyncListener API
 
-[![Build Status](https://travis-ci.org/Empeeric/asynctrace.png?branch=master "Build Status")](https://travis-ci.org/Empeeric/asynctrace)
+[![Build Status](https://travis-ci.org/TheNodeILs/asynctrace.png?branch=master "Build Status")](https://travis-ci.org/TheNodeILs/asynctrace)
 
 
 ## Install
