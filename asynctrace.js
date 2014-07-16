@@ -24,7 +24,7 @@ var settings = {
     globalsStyle: "\x1B[95m",
     coreStyle: "\x1B[37m",
     localsStyle: "\x1B[30;1m",
-    resetStyle: "\x1B[22;49m",
+    resetStyle: "\x1B[0m",
     mocha: true,
     useColors: true,
     BOUNDARY: '==  <sync boundary>',
