@@ -1,4 +1,5 @@
 'use strict';
+if (process.env.NOASYNCTRACE) return;
 try {
     var tracing = require('tracing');
 } catch (e) {
@@ -12,36 +13,40 @@ try {
 } catch (e) {
     debug = console.error.bind(console);
 }
-var PATH_PREFIX = process.cwd().toLowerCase();
-var sep = require('path').sep;
+var Path = require('path');
+var sep = Path.sep;
+var PATH_PREFIX = Path.normalize(process.cwd());
 
 var settings = {
     // `null`ing a style will remove it from the trace output
-    tracingModuleStyle: null,
-//    tracingModuleStyle: "\x1B[31m",
+    tracingStyle: "\x1B[1;37m",
     modulesStyle: "\x1B[32m",
-    globalsStyle: "\x1B[33m",
-    coreStyle: "\x1B[34m",
-    ownStyle: "\x1B[1m",
+    globalsStyle: "\x1B[95m",
+    coreStyle: "\x1B[37m",
+    localsStyle: "\x1B[30;1m",
+    resetStyle: "\x1B[22;49m",
     mocha: true,
-    BOUNDARY: '    [sync boundary]',
-    useColors: true
+    useColors: true,
+    BOUNDARY: '==  <sync boundary>',
+    NEXUS: '    <the nexus>\n'
 };
 
-if (!process.env.NOASYNCTRACE)
-    tracing.addAsyncListener({
-        'create': asyncFunctionInitialized,
-        'before': asyncCallbackBefore,
-        'error': asyncCallbackError,
-        'after': asyncCallbackAfter
-    });
-
+var evt = tracing.createAsyncListener({
+    'create': asyncFunctionInitialized,
+    'before': asyncCallbackBefore,
+    'error': asyncCallbackError,
+    'after': asyncCallbackAfter
+});
+tracing.addAsyncListener(evt);
 
 function asyncFunctionInitialized(oldFrames) {
     oldFrames = oldFrames || Error._frames || [];
     var frames = StackError.getStackFrames(asyncFunctionInitialized);
     var funcName;
-    try { funcName = frames[1] && frames[1].getFunctionName(); } catch (e) {}
+    try {
+        funcName = frames[1] && frames[1].getFunctionName();
+    } catch (e) {
+    }
     if (funcName === 'createTCP') return oldFrames;
     frames.unshift(settings.BOUNDARY);
     frames.push.apply(frames, oldFrames);
@@ -62,38 +67,27 @@ function asyncCallbackAfter(__, frames) {
 function asyncCallbackError(oldFrames, error) {
     if (error._passed) return;
     var frames = (oldFrames || []);
-    error.stack += v8StackFormating('', frames);
+    formatStack(error, frames);
     error._passed = true;
 }
-
-
-/* ===================== stack chain util ======================== */
-
-function StackError(otp) {
-    Error.captureStackTrace(this, otp);
-    Error.prepareStackTrace = function justStoreStackStace(error, frames) {
-        error._frames = frames;
-        return '';
-    };
-    this.stack;  // jshint ignore:line
-    delete Error.prepareStackTrace;
-}
-StackError.getStackFrames = function getStackFrames(otp) {
-    return (new this(otp))._frames;
-};
-util.inherits(StackError, Error);
 
 
 /* ===================== stack chain manipulation & formating ======================== */
 
 function categorizeFrame(frame) {
-    var name = frame && frame.getFileName() && frame.getFileName().toLowerCase();
-    if (!name) return (frame._section = 'core');
-    if (name === 'tracing.js') return (frame._section = 'tracingModule');
-    if (!~name.indexOf(sep)) return (frame._section = 'core');
-    if (name.indexOf(PATH_PREFIX) !== 0) return (frame._section = 'globals');
-    if (~(name.replace(PATH_PREFIX, '')).indexOf('node_modules')) return (frame._section = 'modules');
-    frame._section = 'own';
+    var filename = frame && frame.getFileName && Path.normalize(frame.getFileName());
+    if (!filename)
+        return 'core';
+    else if (filename === 'tracing.js')
+        return 'tracing';
+    else if (!~filename.indexOf(sep))
+        return 'core';
+    else if (filename.indexOf(PATH_PREFIX) !== 0)
+        return 'globals';
+    else if (~(filename.replace(PATH_PREFIX, '')).indexOf('node_modules'))
+        return 'modules';
+    else
+        return 'locals';
 }
 
 function reducer(seed, frame) {
@@ -101,58 +95,93 @@ function reducer(seed, frame) {
         if (frame != seed[seed.length - 1]) seed.push(frame);
         return seed;
     }
-    categorizeFrame(frame);
-    seed.push(frame);
+    frame._section = categorizeFrame(frame);
+    frame._prefix = getPrefix(frame);
+    frame._suffix = getSuffix(frame);
+    if (frame._prefix) seed.push(frame);
     return seed;
 }
 
-
-function v8StackFormating(error, frames) {
-    frames = frames.reduce(reducer, []);
-
-    var lines = [];
-    lines.push(error.toString());
-    frames.push({ toString: function () { return '<the nexus>\n'; }, _section: 'core' });
-    for (var i = 0; i < frames.length; i++) {
-        var frame = frames[i];
-        if (typeof frame == 'string') {
-            lines.push(frame);
-            continue;
-        }
-        var line;
-        try {
-            line = frame.toString();
-        } catch (e) {
-            try {
-                line = "<error: " + e + ">";
-            } catch (ee) {
-                // Any code that reaches this point is seriously nasty!
-                line = "<error>";
-            }
-        }
-        var style = getStyle(frame._section);
-        var prefix = style + "    at ";
-        var suffix = settings.useColors ? "\x1B[0m" : '';
-        if (typeof style == 'string') lines.push(prefix + line + suffix);
-    }
-    return lines.join("\n");
+function formatStack(error, frames) {
+    var latestFrames = extractFrames(error);
+    frames = ['\n' + error.name + ': ' + error.message].concat(latestFrames).concat([settings.BOUNDARY]).concat(frames);
+    frames.push(settings.NEXUS);
+    error.stack = frames.reduce(reducer, []).map(frameToString).join("\n");
 }
 
+function frameToString(frame) {
+    if (typeof frame == 'string') {
+        return getStyle('locals') + frame + getSuffix(frame);
+    }
+    var line;
+    try {
+        line = frame.toString();
+    } catch (e) {
+        try {
+            line = "<error: " + e + ">";
+        } catch (ee) {
+            // Any code that reaches this point is seriously nasty!
+            line = "<error>";
+        }
+    }
+    return frame._prefix + line + frame._suffix;
+}
 
 function getStyle(sec) {
-    return (settings.useColors) ? settings[sec + 'Style'] : '';
+    var ANSICode = settings[sec + 'Style'];
+    if (!ANSICode) return;
+    var preCode = settings.useColors ? ANSICode : '';
+    return preCode;
 }
 
+function getPrefix(frame) {
+    var sec = frame._section;
+    var preCode = getStyle(sec);
+    if (!preCode) return;
+    var postCode = settings.useColors ? settings.resetStyle : '';
+    var secCode = "<" + preCode + sec + postCode + ">" + preCode;
+    var prefix = "at  " + secCode + "          ".slice(0, 11 - sec.length);
+    return prefix;
+}
+
+function getSuffix(frame) {
+    var suffix = settings.useColors ? settings.resetStyle : '';
+    return suffix;
+}
+
+/* =====================  JavaScriptStackTraceApi integrations ======================== */
+function extractFrames(err) {
+    Error.prepareStackTrace = function justStoreStackStace(error, frames) {
+        error._frames = frames;
+        return '';
+    };
+    err.stack;  // jshint ignore:line
+    delete Error.prepareStackTrace;
+    return err._frames;
+}
+function StackError(otp) {
+    Error.captureStackTrace(this, otp);
+}
+StackError.getStackFrames = function getStackFrames(otp) {
+    var err = new this(otp);
+    return extractFrames(err);
+};
+util.inherits(StackError, Error);
 
 /* ===================== 3rd party integrations ======================== */
 
 function setupForMocha() {
     try {
         var mocha = Object.keys(require.cache)
-            .filter(function (k) { return ~k.search(/mocha.index\.js/); })
-            .map(function (k) { return require.cache[k].exports; })
+            .filter(function (k) {
+                return ~k.search(/mocha.index\.js/);
+            })
+            .map(function (k) {
+                return require.cache[k].exports;
+            })
             .pop();
         if (!mocha) return;
+        tracing.removeAsyncListener(evt);
         var shimmer = require('shimmer');
         var reporters = mocha.reporters.Base;
         shimmer.wrap(mocha.Runner.prototype, 'run', function (original) {
@@ -160,6 +189,11 @@ function setupForMocha() {
                 var runner = original.apply(this, arguments);
                 settings.useColors = reporters.useColors;
                 runner.on('test', function () {
+                    Error._frames = null;
+                    tracing.addAsyncListener(evt);
+                });
+                runner.on('test end', function () {
+                    tracing.removeAsyncListener(evt);
                     Error._frames = null;
                 });
             };
