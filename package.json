@@ -40,7 +40,7 @@
     "mocha-compatible"
   ],
   "license": "MIT",
-  "main": "asynctrace.js",
+  "main": "lib/asynctrace.js",
   "name": "asynctrace",
   "repository": "Empeeric/asynctrace",
   "scripts": {

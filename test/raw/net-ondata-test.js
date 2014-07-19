@@ -1,5 +1,5 @@
 'use strict';
-require('asynctrace');
+require('../../');
 var net = require('net');
 
 var server;
