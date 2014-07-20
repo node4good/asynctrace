@@ -1,7 +1,7 @@
 'use strict';
 require('../../');
 var client = require('../../lib/JavaScriptStackTraceApi_client');
-var getStackFrames_better = require('../../wip/getStackFrames_better');
+var getStackFrames_better = require('../../wip/JavaScriptStackTraceApi2_client');
 var COUNT = 30000;
 //var v8n = require('v8-natives');
 //var v8p = require('v8-profiler');

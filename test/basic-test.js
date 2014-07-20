@@ -1,4 +1,5 @@
 'use strict';
+/*globals log */
 var domain = require('domain');
 var expect = require('chai').expect;
 
@@ -7,16 +8,16 @@ describe('setImmediate', function () {
         var i = 0;
         var d = domain.createDomain();
         d.once('error', function (e) {
-            console.log(e.stack);
+            log(e.stack);
             expect(e.message).to.be.equal('gaga');
-            expect(e.stack).to.contain('.a ');
-            expect(e.stack).to.contain('.b ');
-            expect(e.stack).to.contain('.c ');
-            expect(e.stack).to.contain('.d ');
-            expect(e.stack).to.contain('.e ');
+            expect(e.stack).to.contain('a ');
+            expect(e.stack).to.contain('b ');
+            expect(e.stack).to.contain('c ');
+            expect(e.stack).to.contain('d ');
+            expect(e.stack).to.contain('e ');
             if (--i === 0) done();
         });
-        d.run(function () {
+        d.run(function z() {
             setImmediate(function a() {
                 setImmediate(function b() {
                     setImmediate(function c() {
@@ -37,26 +38,25 @@ describe('setImmediate', function () {
         var i = 0;
         var d = domain.createDomain();
         d.once('error', function (e) {
-          console.log(e.stack);
-          expect(e.message).to.be.equal('gaga1');
-            expect(e.stack).to.contain('.a2 ');
-            expect(e.stack).to.contain('.b2 ');
-            expect(e.stack).to.contain('.c2 ');
-            expect(e.stack).to.contain('.d2 ');
-            expect(e.stack).to.contain('.e2 ');
+            expect(e.message).to.be.equal('gaga1');
+            expect(e.stack).to.contain('a2 ');
+            expect(e.stack).to.contain('b2 ');
+            expect(e.stack).to.contain('c2 ');
+            expect(e.stack).to.contain('d2 ');
+            expect(e.stack).to.contain('e2 ');
             --i;
-            d.once('error', function (e) {
-              console.log(e.stack);
-              expect(e.message).to.be.equal('gaga2');
-                expect(e.stack).to.contain('.a2 ');
-                expect(e.stack).to.contain('.b2 ');
-                expect(e.stack).to.contain('.c2 ');
-                expect(e.stack).to.contain('.d21 ');
-                expect(e.stack).to.contain('.e21 ');
+            d.once('error', function (e1) {
+                log(e1.stack);
+                expect(e1.message).to.be.equal('gaga2');
+                expect(e1.stack).to.contain('a2 ');
+                expect(e1.stack).to.contain('b2 ');
+                expect(e1.stack).to.contain('c2 ');
+                expect(e1.stack).to.contain('d21 ');
+                expect(e1.stack).to.contain('e21 ');
                 if (--i === 0) done();
             });
         });
-        d.run(function () {
+        d.run(function z() {
             setImmediate(function a2() {
                 setImmediate(function b2() {
                     setImmediate(function c2() {
@@ -80,13 +80,12 @@ describe('setImmediate', function () {
 });
 
 
-
 describe('nextTick', function () {
     it('show what happens to a local Exception', function (done) {
         var i = 0;
         var d = domain.createDomain();
-        d.once('error', function (e) {
-            console.log(e.stack);
+        d.once('error', function y(e) {
+            log(e.stack);
             expect(e.message).to.be.equal('gaga4');
             expect(e.stack).to.contain(' a ');
             expect(e.stack).to.contain(' b ');
@@ -95,7 +94,7 @@ describe('nextTick', function () {
             expect(e.stack).to.contain(' e ');
             if (--i === 0) done();
         });
-        d.run(function () {
+        d.run(function z() {
             process.nextTick(function a() {
                 process.nextTick(function b() {
                     process.nextTick(function c() {
@@ -115,18 +114,17 @@ describe('nextTick', function () {
     it('show what happens to a exception in itertwining contexts', function (done) {
         var i = 0;
         var d = domain.createDomain();
-        d.once('error', function (e) {
-          console.log(e.stack);
-          expect(e.message).to.be.equal('gaga5');
+        d.once('error', function y(e) {
+            expect(e.message).to.be.equal('gaga5');
             expect(e.stack).to.contain(' a2 ');
             expect(e.stack).to.contain(' b2 ');
             expect(e.stack).to.contain(' c2 ');
             expect(e.stack).to.contain(' d2 ');
             expect(e.stack).to.contain(' e2 ');
             --i;
-            d.once('error', function (e) {
-              console.log(e.stack);
-              expect(e.message).to.be.equal('gaga6');
+            d.once('error', function x(e) {
+                log(e.stack);
+                expect(e.message).to.be.equal('gaga6');
                 expect(e.stack).to.contain(' a2 ');
                 expect(e.stack).to.contain(' b2 ');
                 expect(e.stack).to.contain(' c2 ');
@@ -135,7 +133,7 @@ describe('nextTick', function () {
                 if (--i === 0) done();
             });
         });
-        d.run(function () {
+        d.run(function z() {
             process.nextTick(function a2() {
                 process.nextTick(function b2() {
                     process.nextTick(function c2() {
@@ -164,8 +162,8 @@ describe('fs.readFile', function () {
     it('show what happens to a local Exception', function (done) {
         var i = 0;
         var d = domain.createDomain();
-        d.once('error', function (e) {
-            console.log(e.stack);
+        d.once('error', function y(e) {
+            log(e.stack);
             expect(e.message).to.be.equal('gaga7');
             expect(e.stack).to.contain(' a ');
             expect(e.stack).to.contain(' b ');
@@ -174,7 +172,7 @@ describe('fs.readFile', function () {
             expect(e.stack).to.contain(' e ');
             if (--i === 0) done();
         });
-        d.run(function () {
+        d.run(function z() {
             fs.readFile('package.json', function a() {
                 fs.readFile('package.json', function b() {
                     fs.readFile('package.json', function c() {
@@ -194,18 +192,18 @@ describe('fs.readFile', function () {
     it('show what happens to a exception in itertwining contexts', function (done) {
         var i = 0;
         var d = domain.createDomain();
-        d.once('error', function (e) {
-          console.log(e.stack);
-          expect(e.message).to.be.equal('gaga8');
+        d.once('error', function y(e) {
+            log(e.stack);
+            expect(e.message).to.be.equal('gaga8');
             expect(e.stack).to.contain(' a2 ');
             expect(e.stack).to.contain(' b2 ');
             expect(e.stack).to.contain(' c2 ');
             expect(e.stack).to.contain(' d2 ');
             expect(e.stack).to.contain(' e2 ');
             --i;
-            d.once('error', function (e) {
-              console.log(e.stack);
-              expect(e.message).to.be.equal('gaga9');
+            d.once('error', function x(e) {
+                log(e.stack);
+                expect(e.message).to.be.equal('gaga9');
                 expect(e.stack).to.contain(' a2 ');
                 expect(e.stack).to.contain(' b2 ');
                 expect(e.stack).to.contain(' c2 ');
@@ -214,7 +212,7 @@ describe('fs.readFile', function () {
                 if (--i === 0) done();
             });
         });
-        d.run(function () {
+        d.run(function z() {
             fs.readFile('package.json', function a2() {
                 fs.readFile('package.json', function b2() {
                     fs.readFile('package.json', function c2() {

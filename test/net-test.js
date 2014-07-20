@@ -1,4 +1,5 @@
 'use strict';
+/*globals log */
 var net = require('net');
 var Domain = require('domain');
 var expect = require('chai').expect;
@@ -19,42 +20,42 @@ describe('net module', function () {
             domain.on('error', function (err) {
                 var msg = err.message;
                 var stack = err.stack;
-                console.log(stack);
+                log(stack);
                 switch (msg) {
                     case "1":
-                        expect(stack).to.to.contain('.d1 ');
+                        expect(stack).to.to.contain('d1 ');
                         break;
                     case "2":
-                        expect(stack).to.to.contain('.d2 ');
-                        expect(stack).to.to.contain('.onServerListen ');
+                        expect(stack).to.to.contain('d2 ');
+                        expect(stack).to.to.contain('onServerListen ');
                         break;
                     case "3":
-                        expect(stack).to.to.contain('.d2 ');
+                        expect(stack).to.to.contain('d2 ');
                         break;
                     case "4":
-                        expect(stack).to.to.contain('.d2 ');
+                        expect(stack).to.to.contain('d2 ');
                         break;
                     case "5a":
-                        expect(stack).to.to.contain('.onServerConnection ');
+                        expect(stack).to.to.contain('onServerConnection ');
                         break;
                     case "5b":
-                        expect(stack).to.to.contain('.d2 ');
-                        expect(stack).to.to.contain('.onClientConnect ');
+                        expect(stack).to.to.contain('d2 ');
+                        expect(stack).to.to.contain('onClientConnect ');
                         break;
                     case "7":
                         // this is not stable!
 //                    expect(stack).to.to.contain('.d1 ');
 //                    expect(stack).to.to.contain('.d2 ');
-                        expect(stack).to.to.contain('.onServerSocketData ');
-                        expect(stack).to.to.contain('.runInDomain2 ');
+                        expect(stack).to.to.contain('onServerSocketData ');
+                        expect(stack).to.to.contain('runInDomain2 ');
                         break;
                     case "8":
-                        expect(stack).to.to.contain('.d2 ');
-                        expect(stack).to.to.contain('.onClientSocketData ');
+                        expect(stack).to.to.contain('d2 ');
+                        expect(stack).to.to.contain('onClientSocketData ');
                         break;
                     case "9":
-                        expect(stack).to.to.contain('.d2 ');
-                        expect(stack).to.to.contain('.onClientSocketEnd ');
+                        expect(stack).to.to.contain('d2 ');
+                        expect(stack).to.to.contain('onClientSocketEnd ');
                         break;
                     default:
                         done("what? " + msg);
