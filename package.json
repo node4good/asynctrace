@@ -47,5 +47,5 @@
     "test": "mocha --require .",
     "mypublish": "npm test && npm version patch && npm publish && git push --follow-tags"
   },
-  "version": "1.4.0"
+  "version": "1.4.1"
 }
