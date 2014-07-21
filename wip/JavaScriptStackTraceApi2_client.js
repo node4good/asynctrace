@@ -1,15 +1,7 @@
 'use strict';
-function extractFrames_better(err) {
-    var x = getStackFrames_better(extractFrames_better, err);
-    return x;
-}
-
-
-
-
-function _getRawFrames(caller, err) {
+function getError_better(caller) {
     caller = caller || _getRawFrames
-    var raw_stack = %CollectStackTrace(err, caller, 100); // jshint ignore:line
+    var raw_stack = %CollectStackTrace({}, caller, 100); // jshint ignore:line
     var sloppy_frames_count = raw_stack[0];
     var raw_frames = new Array(sloppy_frames_count);
     for (var i = 1; i < raw_stack.length; i += 4) {
@@ -20,16 +12,18 @@ function _getRawFrames(caller, err) {
         raw_frames.push({receiver: receiver, func: func, code: code, positionCounter: positionCounter});
         sloppy_frames_count--;
     }
-    return raw_frames;
+    return {__StackStace: raw_frames};
 }
 
+function extractFrames_better(err) {
+    throw new TypeError("not implemented");
+}
 
-function getStackFrames_better(caller, err) {
-    err = err || {}
-    var raw_frames = _getRawFrames(caller, err);
+function extractParsedFrames_better(err) {
+    var errStack = err.__StackStace;
     var frames = [];
-    while (raw_frames.length) {
-        var frame = raw_frames.shift();
+    while (errStack.length) {
+        var frame = errStack.shift();
         if (!frame) continue;
         var rawPos = %FunctionGetPositionForOffset(frame.code, frame.positionCounter); // jshint ignore:line
         var script = %FunctionGetScript(frame.func); // jshint ignore:line
@@ -52,7 +46,7 @@ function getStackFrames_better(caller, err) {
     return frames;
 }
 
-module.exports.extractFrames = extractFrames_better;
-module.exports.getStackFrames = getStackFrames_better;
-module.exports.getStackParsedFrames = getStackFrames_better;
 
+module.exports.getError = getError_better;
+module.exports.extractFrames = extractFrames_better;
+module.exports.extractParsedFrames = extractParsedFrames_better;
