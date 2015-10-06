@@ -1,9 +1,7 @@
 {
-  "author": "Refael Ackerkmann <refael@empeeric.com>",
-  "bundledDependencies": [
-    "async-listener"
-  ],
+  "author": "Refael Ackerkmann <me@refack.com>",
   "dependencies": {
+	"async-listener": "> 0.5.0",
     "shimmer": "latest"
   },
   "description": "Deep stack traces based on AsyncListener API",
@@ -11,12 +9,6 @@
     "chai": "latest",
     "istanbul": "latest",
     "mocha": "latest"
-  },
-  "engineStrict": {
-    "node": ">= 0.10.0"
-  },
-  "engines": {
-    "node": "^0.11.12"
   },
   "jshintConfig": {
     "globals": {
@@ -33,6 +25,7 @@
     "unused": true
   },
   "keywords": [
+	"async-listner",
     "trace",
     "deep-stack-trace",
     "AsyncListener",
@@ -42,7 +35,7 @@
   "license": "MIT",
   "main": "lib/asynctrace.js",
   "name": "asynctrace",
-  "repository": "Empeeric/asynctrace",
+  "repository": "TheNodeILs/asynctrace",
   "scripts": {
     "test": "mocha --require .",
     "mypublish": "npm test && npm version patch && npm publish && git push --follow-tags"
