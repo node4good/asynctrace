@@ -9,4 +9,4 @@ deploy:
     secure: i/b/3QFSpstNAqMoq13qmXGDikK6JPhr9S+psNH6W+pcEkmFZzdo9LyWy2ki5z4ngQFMx0yrhiROjEZtiwIb0xBdt4N+XFIOQqGlhjcwg14G2kk8lL5sRfL0RD8nH95xg499X3mEiqKWOcWeEh/iPWO5TboDm8CvCgW4sez+jn4=
   on:
     tags: true
-    repo: TheNodeILs/asynctrace
+    repo: node4good/asynctrace
