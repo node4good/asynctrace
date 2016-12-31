@@ -1,8 +1,9 @@
 'use strict';
-var fs = require('fs');
-var fd = fs.openSync("raw_out.log", 'a');
+const fs = require('fs');
+const fd = fs.openSync("raw_out.log", 'a');
 function writeSync(str) {
     console._stdout.write(str);
-    fs.write(fd, str);
+    fs.writeSync(fd, str);
 }
 global.log = writeSync;
+require('..');

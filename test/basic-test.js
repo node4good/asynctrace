@@ -1,12 +1,13 @@
 'use strict';
 /*globals log */
-var domain = require('domain');
-var expect = require('chai').expect;
+const domain = require('domain');
+const expect = require('chai').expect;
+require('./common.js');
 
 describe('setImmediate', function () {
     it('show what happens to a local Exception', function (done) {
-        var i = 0;
-        var d = domain.createDomain();
+        const d = domain.createDomain();
+        let i = 0;
         d.once('error', function (e) {
             log(e.stack);
             expect(e.message).to.be.equal('gaga');
@@ -35,8 +36,8 @@ describe('setImmediate', function () {
 
 
     it('show what happens to a exception in itertwining contexts', function (done) {
-        var i = 0;
-        var d = domain.createDomain();
+        const d = domain.createDomain();
+        let i = 0;
         d.once('error', function (e) {
             expect(e.message).to.be.equal('gaga1');
             expect(e.stack).to.contain('a2 ');
@@ -82,8 +83,8 @@ describe('setImmediate', function () {
 
 describe('nextTick', function () {
     it('show what happens to a local Exception', function (done) {
-        var i = 0;
-        var d = domain.createDomain();
+        const d = domain.createDomain();
+        let i = 0;
         d.once('error', function y(e) {
             log(e.stack);
             expect(e.message).to.be.equal('gaga4');
@@ -112,8 +113,8 @@ describe('nextTick', function () {
 
 
     it('show what happens to a exception in itertwining contexts', function (done) {
-        var i = 0;
-        var d = domain.createDomain();
+        const d = domain.createDomain();
+        let i = 0;
         d.once('error', function y(e) {
             expect(e.message).to.be.equal('gaga5');
             expect(e.stack).to.contain(' a2 ');
@@ -158,10 +159,10 @@ describe('nextTick', function () {
 
 
 describe('fs.readFile', function () {
-    var fs = require('fs');
+    const fs = require('fs');
     it('show what happens to a local Exception', function (done) {
-        var i = 0;
-        var d = domain.createDomain();
+        const d = domain.createDomain();
+        let i = 0;
         d.once('error', function y(e) {
             log(e.stack);
             expect(e.message).to.be.equal('gaga7');
@@ -190,8 +191,8 @@ describe('fs.readFile', function () {
 
 
     it('show what happens to a exception in itertwining contexts', function (done) {
-        var i = 0;
-        var d = domain.createDomain();
+        const d = domain.createDomain();
+        let i = 0;
         d.once('error', function y(e) {
             log(e.stack);
             expect(e.message).to.be.equal('gaga8');
@@ -222,12 +223,14 @@ describe('fs.readFile', function () {
                                 throw new Error('gaga8');
                             });
                         });
-                        fs.readFile('package.json', function d21() {
-                            fs.readFile('package.json', function e21() {
-                                ++i;
-                                throw new Error('gaga9');
+                        setTimeout(() => {
+                            fs.readFile('package.json', function d21() {
+                                fs.readFile('package.json', function e21() {
+                                    ++i;
+                                    throw new Error('gaga9');
+                                });
                             });
-                        });
+                        }, 100);
                     });
                 });
             });

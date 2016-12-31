@@ -1,8 +1,9 @@
 'use strict';
 /*globals log */
-var net = require('net');
-var Domain = require('domain');
-var expect = require('chai').expect;
+const net = require('net');
+const Domain = require('domain');
+const expect = require('chai').expect;
+require('./common.js');
 
 function mySignal(n) { setImmediate(function () {throw new Error(n);}); }
 
@@ -11,15 +12,15 @@ describe('net module', function () {
         it("I won't touch this in v0.10", function (done) {done();});
     else
         it("client server", function (done) {
-            var DATUM1 = "Hello";
-            var DATUM2 = "GoodBye";
-            var server;
-            var address;
+            const DATUM1 = "Hello";
+            const DATUM2 = "GoodBye";
+            let server;
+            let address;
 
-            var domain = Domain.create();
+            const domain = Domain.create();
             domain.on('error', function (err) {
-                var msg = err.message;
-                var stack = err.stack;
+                const msg = err.message;
+                const stack = err.stack;
                 log(stack);
                 switch (msg) {
                     case "1":
@@ -66,9 +67,7 @@ describe('net module', function () {
             domain.run(function runInDomain() {
                 setImmediate(function d1() {
                     Error._frames = null;
-                    server = net.createServer();
-                    mySignal('1');
-                    server.on('connection', function onServerConnection(socket) {
+                    server = net.createServer(function onServerConnection(socket) {
                         mySignal('5a');
                         socket.on("data", function onServerSocketData(data) {
                             domain.run(function runInDomain2() {
@@ -79,6 +78,7 @@ describe('net module', function () {
                             });
                         });
                     });
+                    mySignal('1');
                 });
 
                 setImmediate(function d2() {
@@ -87,9 +87,7 @@ describe('net module', function () {
                         mySignal('2');
                         address = server.address();
                         mySignal('3');
-                        var client = net.connect(address.port);
-                        mySignal('4');
-                        client.on('connect', function onClientConnect() {
+                        const client = net.connect(address.port, function onClientConnect() {
                             mySignal('5b');
                             client.write(DATUM1);
                             client.on("data", function onClientSocketData(data) {
@@ -101,6 +99,7 @@ describe('net module', function () {
                                 done();
                             });
                         });
+                        mySignal('4');
                     });
                 });
             });
