@@ -1,51 +1,49 @@
 {
-  "author": "Refael Ackerkmann <refael@empeeric.com>",
-  "bundledDependencies": [
-    "async-listener"
-  ],
-  "dependencies": {
-    "shimmer": "latest"
-  },
-  "description": "Deep stack traces based on AsyncListener API",
-  "devDependencies": {
-    "chai": "latest",
-    "istanbul": "latest",
-    "mocha": "latest"
-  },
-  "engineStrict": {
-    "node": ">= 0.10.0"
-  },
-  "engines": {
-    "node": "^0.11.12"
-  },
-  "jshintConfig": {
-    "globals": {
-      "after": true,
-      "afterEach": true,
-      "before": true,
-      "beforeEach": true,
-      "describe": true,
-      "it": true
-    },
-    "node": true,
-    "strict": true,
-    "trailing": true,
-    "unused": true
-  },
-  "keywords": [
-    "trace",
-    "deep-stack-trace",
-    "AsyncListener",
-    "performant",
-    "mocha-compatible"
-  ],
-  "license": "MIT",
-  "main": "lib/asynctrace.js",
-  "name": "asynctrace",
-  "repository": "Empeeric/asynctrace",
-  "scripts": {
-    "test": "mocha --require .",
-    "mypublish": "npm test && npm version patch && npm publish && git push --follow-tags"
-  },
-  "version": "1.4.0"
+   "author" : "Refael Ackerkmann <refael@empeeric.com>",
+   "bundledDependencies" : [ "async-listener" ],
+   "dependencies" : {
+      "shimmer" : "latest"
+   },
+   "description" : "Deep stack traces based on AsyncListener API",
+   "devDependencies" : {
+      "chai" : "latest",
+      "istanbul" : "latest",
+      "mocha" : "latest"
+   },
+   "engineStrict" : {
+      "node" : ">= 0.10.0"
+   },
+   "engines" : {
+      "node" : "^0.11.12"
+   },
+   "jshintConfig" : {
+      "globals" : {
+         "after" : true,
+         "afterEach" : true,
+         "before" : true,
+         "beforeEach" : true,
+         "describe" : true,
+         "it" : true
+      },
+      "node" : true,
+      "strict" : true,
+      "trailing" : true,
+      "unused" : true
+   },
+   "keywords" : [
+      "trace",
+      "deep-stack-trace",
+      "AsyncListener",
+      "performant",
+      "mocha-compatible"
+   ],
+   "license" : "MIT",
+   "main" : "lib/asynctrace.js",
+   "name" : "asynctrace2",
+   "repository" : "Empeeric/asynctrace",
+   "scripts" : {
+      "mypublish" : "npm test && npm version patch && npm publish && git push --follow-tags",
+      "test" : "mocha --require ."
+   },
+   "version" : "1.4.0"
 }
